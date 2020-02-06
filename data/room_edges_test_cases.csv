@@ -1,0 +1,30 @@
+Outside,Foyer
+Outside,Living
+Outside,Kitchen
+Outside,Garage
+Living,Kitchen
+Living,Dining
+Living,Master Bedroom
+Living,Bathroom
+Kitchen,Living
+Kitchen,Dining
+Kitchen,Bedroom
+Kitchen,Bath
+Kitchen,Laundry
+Kitchen,Pantry
+Kitchen,Garage
+Bedroom,Living
+Bedroom,Dining
+Bedroom,Kitchen
+Bedroom,Guest Bathroom
+Master Bedroom,Living
+Master Bedroom,Dining
+Master Bedroom,Kitchen
+Master Bedroom,Bath
+Master Bedroom,Spare
+Bath,Bedroom
+Bath,Living
+Laundry,Garage
+Laundry,Kitchen
+Kitchen,Pantry
+Bathroom,Linen Closet

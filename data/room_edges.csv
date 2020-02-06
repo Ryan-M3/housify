@@ -1,0 +1,16 @@
+Outside,Living
+Outside,Kitchen
+Outside,Garage
+Living,Kitchen
+Living,Bed
+Living,Bath
+Living,Dining
+Kitchen,Pantry
+Kitchen,Laundry
+Kitchen,Garage
+Kitchen,Living
+Kitchen,Dining
+Bed,Bath
+Bed,Closet
+Garage,Living
+Garage,Kitchen
