@@ -44,12 +44,31 @@ func (t *RTree) CnxValues() []Rect {
 	return output
 }
 
-func (t *RTree) FindNearestPt(pt Pt) []Rect {
-	var output []Rect
+func (t *RTree) FindNearestPt(pt Pt) []*Rect {
+	var output []*Rect
 	for _, leaf := range t.Leafs() {
 		if leaf.Value.Contains(pt) {
-			output = append(output, leaf.Value)
+			output = append(output, &leaf.Value)
 		}
 	}
 	return output
+}
+
+// Increase or decrease all corners. Doe NOT scale in place, it scales from the
+// origin. Use this if you are iterating over rooms and want to make the entire
+// picture bigger.
+func (t *RTree) Scale(amt float64) {
+	t.Value.X0 *= amt
+	t.Value.Y0 *= amt
+	t.Value.X1 *= amt
+	t.Value.Y1 *= amt
+}
+
+func (t *RTree) Quantize(decimalPlaces float64) {
+	for _, branch := range t.List() {
+		branch.Value.X0 = RoundTo(branch.Value.X0, decimalPlaces)
+		branch.Value.X1 = RoundTo(branch.Value.X1, decimalPlaces)
+		branch.Value.Y0 = RoundTo(branch.Value.Y0, decimalPlaces)
+		branch.Value.Y1 = RoundTo(branch.Value.Y1, decimalPlaces)
+	}
 }

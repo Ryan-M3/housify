@@ -44,6 +44,47 @@ func Draw(parent *data.RTree) {
 	fmt.Println("done!")
 }
 
+func Draw2(parent *data.RTree, backbone []data.Line) {
+	parent.Scale(scaleAmt)
+	w := int(parent.Value.Width())
+	h := int(parent.Value.Height())
+	dc := gg.NewContext(w, h)
+	dc.SetRGB(1, 1, 1)
+	dc.Fill()
+	dc.Clear()
+	if err := dc.LoadFontFace("./data/ubuntu.ttf", 12); err != nil {
+		panic(err)
+	}
+	dc.SetLineWidth(1)
+	dc.SetRGBA(0, 0, 0, 1)
+	for _, r := range parent.Leafs() {
+		r.Scale(scaleAmt)
+		// The coordinate system used winds up flipping the image across the
+		// vertical axis. This is because the library used considers the NW
+		// corner to be the origin, but I always think of points as being on a
+		// Cartesian plane, so the SW corner is the origin. This shouldn't
+		// really matter, however.
+		dc.DrawRectangle(
+			r.Value.X0,
+			r.Value.Y0,
+			r.Value.Width(),
+			r.Value.Height(),
+		)
+		dc.Stroke()
+		pt := r.Value.Center()
+		dc.DrawStringAnchored(r.Value.Label, pt.X, pt.Y, 0.5, 0.5)
+	}
+	dc.SetRGB255(255, 0, 0)
+	dc.SetLineWidth(4.0)
+	for _, ln := range backbone {
+		a, b := data.LineToPt(ln)
+		dc.DrawLine(a.X*scaleAmt, a.Y*scaleAmt, b.X*scaleAmt, b.Y*scaleAmt)
+		dc.Stroke()
+	}
+	dc.SavePNG("out.png")
+	fmt.Println("done!")
+}
+
 func TestTree() (data.Rect, *data.FTree) {
 	bounds := data.Rect{X0: 0, Y0: 0, X1: 60, Y1: 40, Label: "root"}
 	a := data.FTree{Value: 60, Label: "Living", Cnx: nil}
@@ -62,10 +103,11 @@ func TestTree() (data.Rect, *data.FTree) {
 }
 
 func main() {
-	bounds, areas := TestTree()
-	for _, r := range Squarify(bounds, areas).Leafs() {
-		fmt.Println(r)
-	}
-	squarified := Squarify(GenHouse("data/room_edges.csv", "data/room_sizes.csv"))
-	Draw(squarified)
+	bounds, areas := GenHouse("data/room_edges.csv", "data/room_sizes.csv")
+	squarified := Squarify(bounds, areas)
+	backbone := HouseGraph(bounds, squarified)
+	//fmt.Println(backbone)
+	InsertHallway(squarified, backbone, 2)
+	//Draw(squarified)
+	Draw2(squarified, data.GraphToLines(backbone))
 }

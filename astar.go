@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	data "housify/data_structures"
 	"math"
 	"sort"
@@ -41,7 +42,9 @@ func AStars(src data.Pt, tgts []data.Pt, g data.Graph) [][]data.Pt {
 		if path, ok := AStar(src, tgt, g, make(map[data.Pt]bool, 0)); ok {
 			paths[i] = path
 		} else {
-			panic("invalid graph generated / no path found between points")
+			fmt.Printf("Error, no path between Src: %v and Tgt: %v\n", src, tgt)
+			//return AStars(selectKey(g), tgts, g)
+			//panic("invalid graph generated / no path found between points")
 		}
 	}
 	return paths

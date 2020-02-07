@@ -1,46 +1,81 @@
 package main
 
 import (
+	"fmt"
 	data "housify/data_structures"
 )
-
-func selectKey(g data.Graph) data.Pt {
-	for k, _ := range g {
-		return k
-	}
-	panic("Can't select key in empty graph.")
-}
 
 func connectToCenter(g data.Graph, rects []data.Rect) {
 	for _, r := range rects {
 		ne, se, sw, nw := data.RectToPts(r)
 		center := r.Center()
 		for _, corner := range []data.Pt{ne, se, sw, nw} {
-			if _, ok := g[corner]; ok {
-				data.Add(g, corner, center)
-			}
+			data.Add(g, corner, center)
 		}
 	}
 }
 
-func Backbone(bounds data.Rect, house *data.RTree) data.Graph {
-	living, ok := house.Find("Living")
-	if !ok {
-		panic("House generated without a living room.")
+func GenerateTargets(rs []data.Rect) [][]data.Pt {
+	var pts [][]data.Pt
+	for _, r := range rs {
+		a, b, c, d := data.RectToPts(r)
+		tgt := []data.Pt{a, b, c, d}
+		pts = append(pts, tgt)
 	}
+	return pts
+}
+
+func HouseGraph(bounds data.Rect, house *data.RTree) data.Graph {
+	house.Quantize(0)
 	leafs := house.Leafs()
 	rects := data.RTreesToRects(leafs)
 	var lines []data.Line
 	for _, ln := range data.ResegmentLines(data.RectsToLines(rects)) {
-		if !data.InPerimeter(bounds, ln) && !data.InPerimeter(living.Value, ln) {
+		if !data.InPerimeter(bounds, ln) &&
+			!data.EndsInPerimeter(bounds, ln) {
 			lines = append(lines, ln)
 		}
 	}
 	g := data.LinesToGraph(lines)
-	connectToCenter(g, rects)
-	k := selectKey(g)
-
-	centers := data.RectsToCenters(rects)
-	astars := AStars(k, centers, g)
-	return data.PathsToGraph(astars)
+	tgts := GenerateTargets(rects)
+	paths := DFSs(g, tgts)
+	fmt.Println()
+	return data.PathsToGraph(paths)
+	//data.PrintGraph(g)
+	//k := data.SelectKey(g)
+	//astars := AStars(k, centers, g)
+	//living, _ := house.Find("Living")
+	//astars := DFSs(g, centers)
+	//return data.PathsToGraph(astars)
+	//return g
 }
+
+//func Backbone(bounds data.Rect, house *data.RTree) data.Graph {
+//	_, ok := house.Find("Living")
+//	if !ok {
+//		panic("House generated without a living room.")
+//	}
+//	leafs := house.Leafs()
+//	rects := data.RTreesToRects(leafs)
+//	var lines []data.Line
+//	for _, ln := range data.ResegmentLines(data.RectsToLines(rects)) {
+//		if !data.InPerimeter(bounds, ln) && !data.EndsInPerimeter(bounds, ln) { // && !data.InPerimeter(living.Value, ln, 8) {
+//			lines = append(lines, ln)
+//		}
+//	}
+//	g := data.LinesToGraph(lines)
+//
+//	var rects2 []data.Rect // rects minus the living rooms rect
+//	for _, r := range rects {
+//		if r.Label != "Living" {
+//			rects2 = append(rects2, r)
+//		}
+//	}
+//	rects = rects2
+//
+//	connectToCenter(g, rects)
+//	centers := data.RectsToCenters(rects)
+//	//astars := AStars(k, centers, g)
+//	astars := DFSs(g, centers)
+//	return data.PathsToGraph(astars)
+//}

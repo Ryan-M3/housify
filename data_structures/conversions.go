@@ -1,7 +1,18 @@
 package data_structures
 
+import (
+	"fmt"
+	"math"
+)
+
 // Returns the top, right, bottom, and left lines of a rectangle.
 func RectToLines(r *Rect) (Line, Line, Line, Line) {
+	// x0,y1   x1,y1
+	//   + - - - +
+	//   |       |
+	//   |       |
+	//   + - - - +
+	// x0,y0    x1,y0
 	return Line{r.X0, r.Y1, r.X1, r.Y1}, // top
 		Line{r.X1, r.Y0, r.X1, r.Y1}, // right
 		Line{r.X0, r.Y0, r.X1, r.Y0}, // bottom
@@ -39,6 +50,9 @@ func LinesToGraph(lines []Line) Graph {
 }
 
 func addPath(g Graph, path []Pt) {
+	if len(path) < 2 {
+		return
+	}
 	a := path[0]
 	for _, b := range path[1:] {
 		if !HasPt(g[a], b) {
@@ -80,18 +94,31 @@ func GraphToLines(g Graph) []Line {
 	var edges []Line
 	added := make(map[Line]bool, 0)
 	for k, vs := range g {
+		fmt.Println(k)
 		for _, v := range vs {
-			e := Line{k.X, k.Y, v.X, v.Y}
+			fmt.Printf("    %.2f, %.2f\n", v.X, v.Y)
+			minx := math.Min(k.X, v.X)
+			maxx := math.Max(k.X, v.X)
+			miny := math.Min(k.Y, v.Y)
+			maxy := math.Max(k.Y, v.Y)
+			e := Line{minx, miny, maxx, maxy}
 			// a line from point A to point B is consider the same line as the
 			// line from point B to point A; below we check for duplicates
 			// before adding it to the output
 			if _, ok := added[e]; !ok {
 				edges = append(edges, e)
 				added[e] = true
-				reversed := Line{v.X, v.Y, k.X, k.Y}
+				reversed := Line{e.x1, e.y1, e.x0, e.y0}
 				added[reversed] = true
 			}
 		}
 	}
 	return edges
+}
+
+func RectToPts(r Rect) (Pt, Pt, Pt, Pt) {
+	return Pt{r.X1, r.Y1}, // NE
+		Pt{r.X1, r.Y0}, // SE
+		Pt{r.X0, r.Y0}, // SW
+		Pt{r.X0, r.Y1} // NW
 }

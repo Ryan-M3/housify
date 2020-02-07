@@ -20,6 +20,7 @@ func (r *Rect) Width() float64 {
 func (r *Rect) Height() float64 {
 	return math.Abs(r.Y1 - r.Y0)
 }
+
 func (r *Rect) Area() float64 {
 	return r.Width() * r.Height()
 }
@@ -66,14 +67,31 @@ func (r *Rect) MoveTo(x, y float64) {
 	r.Y0 = y
 }
 
-// Increase or decrease all corners. Doe NOT scale in place, it scales from the
-// origin. Use this if you are iterating over rooms and want to make the entire
-// picture bigger.
-func (r *RTree) Scale(amt float64) {
-	r.Value.X0 *= amt
-	r.Value.Y0 *= amt
-	r.Value.X1 *= amt
-	r.Value.Y1 *= amt
+func (r *Rect) AboveLine(ln Line) bool {
+	//          y1
+	//  + - - - +
+	//  |       |
+	//  + - - - +
+	// y0
+	//  +---e---+  e.y
+	return r.Y0 >= ln.y1 && r.Y1 > ln.y1
+}
+
+func (r *Rect) BelowLine(ln Line) bool {
+	return !r.AboveLine(ln)
+}
+
+func (r *Rect) RightOfLine(ln Line) bool {
+	//    r.x0    r.x1
+	//  +  + - - - +
+	//  |  |       |
+	//  +  + - - - +
+	// e.x
+	return r.X0 >= ln.x1 && r.X1 > ln.x1
+}
+
+func (r *Rect) LeftOfLine(ln Line) bool {
+	return !r.RightOfLine(ln)
 }
 
 //////////////

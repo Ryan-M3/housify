@@ -9,6 +9,10 @@ type Line struct {
 	x0, y0, x1, y1 float64
 }
 
+/////////////
+// Getters //
+/////////////
+
 func (ln *Line) Length() float64 {
 	return math.Sqrt(math.Pow(math.Abs(ln.x0-ln.x1), 2) + math.Pow(math.Abs(ln.y0-ln.y1), 2))
 }
@@ -26,14 +30,39 @@ func Collinear(a, b Line) bool {
 		(Vert(a) && Vert(b) && a.x0 == b.x0)
 }
 
+func RoundTo(n, place float64) float64 {
+	return math.Round(n*math.Pow(10, place)) / math.Pow(10, place)
+}
+
+// Check whether a line is completely within the perimeter of a rectangle.
 func InPerimeter(hull Rect, line Line) bool {
+	// TODO: adding round to to everything did fix the issue of improperly
+	// trimmed graphs, but now this is terrible to look at
+	// x0,y1   x1,y1
+	//   + - - - +
+	//   |       |
+	//   |       |
+	//   + - - - +
+	// x0,y0    x1,y0
+	//top, _, _, _ := RectToLines(&hull)
 	if Horz(line) {
-		if (line.y0 == hull.Y0) || (line.y0 == hull.Y1) {
-			return hull.X0 <= line.x0 && line.x1 <= hull.X1
-		}
+		return line.y0 == hull.Y0 || line.y1 == hull.Y1
 	} else {
-		if (line.x0 == hull.X0) || (line.x0 == hull.X1) {
-			return hull.Y0 <= line.y0 && line.y1 <= hull.Y1
+		return line.x0 == hull.X0 || line.x1 == hull.X1
+	}
+}
+
+func PtInLine(pt Pt, line Line) bool {
+	return line.x0 <= pt.X && pt.X <= line.x1 &&
+		line.y0 <= pt.Y && pt.Y <= line.y1
+}
+
+func EndsInPerimeter(hull Rect, line Line) bool {
+	top, right, btm, left := RectToLines(&hull)
+	a, b := LineToPt(line)
+	for _, side := range []Line{top, right, btm, left} {
+		if PtInLine(a, side) || PtInLine(b, side) {
+			return true
 		}
 	}
 	return false
@@ -63,6 +92,16 @@ func IntersectsHorz(left Line, right Line) bool {
 	}
 }
 
+func TouchesHorz(left Line, right Line) bool {
+	if left.y0 != right.y0 {
+		return false
+	} else if right.x0 < left.x0 {
+		return TouchesHorz(right, left)
+	} else {
+		return Horz(left) && Horz(right) && right.x0 <= left.x1
+	}
+}
+
 // Do two vertical, collinear lines intersect?
 // Given two lines, a:b, and c:d, two lines
 // intesect if:
@@ -84,6 +123,16 @@ func IntersectsVert(btm Line, top Line) bool {
 		return IntersectsVert(top, btm)
 	} else {
 		return Vert(btm) && Vert(top) && top.y0 < btm.y1
+	}
+}
+
+func TouchesVert(btm Line, top Line) bool {
+	if top.x0 != btm.x0 {
+		return false
+	} else if top.y0 <= btm.y0 {
+		return TouchesVert(top, btm)
+	} else {
+		return Vert(btm) && Vert(top) && top.y0 <= btm.y1
 	}
 }
 
@@ -116,6 +165,10 @@ func StrictlyInside(bounding Line, line Line) bool {
 		(Vert(bounding) && Vert(line) && bounding.y0 < line.y0 && line.y1 < bounding.y1)
 }
 
+/////////////
+// Setters //
+/////////////
+
 func ResegmentLine(left Line, right Line) []Line {
 	// If segments are horizontal, then the ys are all the same, and if they're
 	// vertical then the xs are all the same. This allows us to combine
@@ -139,9 +192,15 @@ func ResegmentLine(left Line, right Line) []Line {
 				return xs[i] < xs[j]
 			})
 			y := left.y0
+			var mid float64
+			if xs[0] == xs[1] {
+				mid = xs[2]
+			} else {
+				mid = xs[1]
+			}
 			return []Line{
-				Line{xs[0], y, xs[1], y},
-				Line{xs[2], y, xs[3], y},
+				Line{xs[0], y, mid, y},
+				Line{mid, y, xs[3], y},
 			}
 		} else if Vert(left) && Vert(right) {
 			ys := []float64{left.y0, left.y1, right.y0, right.y1}
@@ -149,9 +208,15 @@ func ResegmentLine(left Line, right Line) []Line {
 				return ys[i] < ys[j]
 			})
 			x := left.x0
+			var mid float64
+			if ys[0] == ys[1] {
+				mid = ys[2]
+			} else {
+				mid = ys[1]
+			}
 			return []Line{
-				Line{x, ys[0], x, ys[1]},
-				Line{x, ys[2], x, ys[3]},
+				Line{x, ys[0], x, mid},
+				Line{x, mid, x, ys[3]},
 			}
 		} else {
 			panic("incorrect input in ResegmentLine()")
@@ -227,13 +292,6 @@ func ResegmentLines(lines []Line) []Line {
 	hs = resegmentLinesHorz(hs)
 	vs = resegmentLinesVert(vs)
 	return append(hs, vs...)
-}
-
-func RectToPts(r Rect) (Pt, Pt, Pt, Pt) {
-	return Pt{r.X1, r.Y1}, // NE
-		Pt{r.X1, r.Y0}, // SE
-		Pt{r.X0, r.Y0}, // SW
-		Pt{r.X0, r.Y1} // NW
 }
 
 func FilterLines(lines []Line) []Line {
