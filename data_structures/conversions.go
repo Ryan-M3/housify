@@ -75,3 +75,23 @@ func RectsToCenters(rects []Rect) []Pt {
 	}
 	return centers
 }
+
+func GraphToLines(g Graph) []Line {
+	var edges []Line
+	added := make(map[Line]bool, 0)
+	for k, vs := range g {
+		for _, v := range vs {
+			e := Line{k.X, k.Y, v.X, v.Y}
+			// a line from point A to point B is consider the same line as the
+			// line from point B to point A; below we check for duplicates
+			// before adding it to the output
+			if _, ok := added[e]; !ok {
+				edges = append(edges, e)
+				added[e] = true
+				reversed := Line{v.X, v.Y, k.X, k.Y}
+				added[reversed] = true
+			}
+		}
+	}
+	return edges
+}
