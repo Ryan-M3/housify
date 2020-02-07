@@ -20,12 +20,32 @@ func InBoth(xs, ys []*data.Rect) []*data.Rect {
 	return output
 }
 
+func unique(lines []data.Line) []data.Line {
+	var output []data.Line
+	added := make(map[data.Line]bool, 0)
+	for _, ln := range lines {
+		if _, ok := added[ln]; !ok {
+			output = append(output, ln)
+			added[ln] = true
+		}
+	}
+	return output
+}
+
 func InsertHallway(house *data.RTree, backbone data.Graph, width float64) {
-	for _, ln := range data.GraphToLines(backbone) {
+	movedHorz := make(map[*data.Rect]bool, 0)
+	movedVert := make(map[*data.Rect]bool, 0)
+	for _, ln := range unique(data.GraphToLines(backbone)) {
 		a, b := data.LineToPt(ln)
-		rooms := InBoth(house.FindNearestPt(a), house.FindNearestPt(b))
+		//rooms := InBoth(house.FindNearestPt(a), house.FindNearestPt(b))
+		rooms := append(house.FindNearestPt(a), house.FindNearestPt(b)...)
 		if data.Horz(ln) {
 			for _, r := range rooms {
+				if _, ok := movedHorz[r]; ok {
+					continue
+				} else {
+					movedHorz[r] = true
+				}
 				if r.AboveLine(ln) {
 					r.SetHeightBtm(r.Height() - width/2.0)
 				} else if r.BelowLine(ln) {
@@ -36,6 +56,11 @@ func InsertHallway(house *data.RTree, backbone data.Graph, width float64) {
 			}
 		} else {
 			for _, r := range rooms {
+				if _, ok := movedVert[r]; ok {
+					continue
+				} else {
+					movedVert[r] = true
+				}
 				if r.RightOfLine(ln) {
 					r.SetWidthL(r.Width() - width/2.0)
 				} else if r.LeftOfLine(ln) {

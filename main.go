@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/fogleman/gg"
 	data "housify/data_structures"
+	"math/rand"
+	"time"
 )
 
 const (
@@ -24,6 +26,12 @@ func Draw(parent *data.RTree) {
 	dc.SetLineWidth(1)
 	dc.SetRGBA(0, 0, 0, 1)
 	for _, r := range parent.Leafs() {
+		if r.Value.Label == "Living" {
+			r.Scale(scaleAmt)
+			pt := r.Value.Center()
+			dc.DrawStringAnchored(r.Value.Label, pt.X, pt.Y, 0.5, 0.5)
+			continue
+		}
 		r.Scale(scaleAmt)
 		// The coordinate system used winds up flipping the image across the
 		// vertical axis. This is because the library used considers the NW
@@ -44,7 +52,8 @@ func Draw(parent *data.RTree) {
 	fmt.Println("done!")
 }
 
-func Draw2(parent *data.RTree, backbone []data.Line) {
+// for debugging purposes only
+func drawWithBackbone(parent *data.RTree, backbone []data.Line) {
 	parent.Scale(scaleAmt)
 	w := int(parent.Value.Width())
 	h := int(parent.Value.Height())
@@ -103,11 +112,11 @@ func TestTree() (data.Rect, *data.FTree) {
 }
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	bounds, areas := GenHouse("data/room_edges.csv", "data/room_sizes.csv")
 	squarified := Squarify(bounds, areas)
-	backbone := HouseGraph(bounds, squarified)
-	//fmt.Println(backbone)
-	InsertHallway(squarified, backbone, 2)
-	//Draw(squarified)
-	Draw2(squarified, data.GraphToLines(backbone))
+	squarified.Quantize(0) // prevents floating point errors
+	backbone := Backbone(bounds, squarified)
+	InsertHallway(squarified, backbone, 4)
+	Draw(squarified)
 }

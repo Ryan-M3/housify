@@ -17,7 +17,7 @@ func Test_AStar(t *testing.T) {
 		data.Pt{X: 2, Y: 0},
 	}
 	m := make(map[data.Pt]bool, 0)
-	if got, ok := AStar(data.Pt{X: 0, Y: 0}, data.Pt{X: 2, Y: 0}, g, m); ok {
+	if got := AStar([]data.Pt{data.Pt{X: 0, Y: 0}}, data.pt{data.Pt{X: 2, Y: 0}}, g, m); ok {
 		if len(got) != len(want) {
 			t.Errorf("Not enough points returned; expected %v, but got %v", want, got)
 		}

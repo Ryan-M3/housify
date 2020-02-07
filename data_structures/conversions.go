@@ -1,7 +1,6 @@
 package data_structures
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -94,9 +93,7 @@ func GraphToLines(g Graph) []Line {
 	var edges []Line
 	added := make(map[Line]bool, 0)
 	for k, vs := range g {
-		fmt.Println(k)
 		for _, v := range vs {
-			fmt.Printf("    %.2f, %.2f\n", v.X, v.Y)
 			minx := math.Min(k.X, v.X)
 			maxx := math.Max(k.X, v.X)
 			miny := math.Min(k.Y, v.Y)

@@ -60,9 +60,8 @@ func loadRoomEdges(fname string) (map[string][]string, error) {
 }
 
 func genArea(label string, m map[string]float64) float64 {
-	// The algorithm just seems to work slightly better with rounded values, I
-	// don't know why.
-	return math.Round(m[label] * (1 + rand.Float64()/5))
+	// this formula is more or less arbitrary
+	return m[label] * (1 + math.Sqrt(rand.Float64()))
 }
 
 func _genHouse(edges map[string][]string, sizes map[string]float64) (data.Rect, *data.FTree) {
@@ -122,8 +121,8 @@ func _genHouse(edges map[string][]string, sizes map[string]float64) (data.Rect, 
 
 	// Determine the dimensions of the entire house.
 	side := math.Sqrt(tree.Value)
-	w := math.Round(side * (1 + rand.Float64()/2))
-	h := math.Round(side * (1 + rand.Float64()/2))
+	w := math.Round(side * (1 + rand.Float64()))
+	h := math.Round(side * (1 + rand.Float64()))
 	bounds := data.Rect{X0: 0, Y0: 0, X1: w, Y1: h, Label: ""}
 
 	return bounds, &tree
