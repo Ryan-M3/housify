@@ -61,13 +61,13 @@ func addPath(g Graph, path []Pt) {
 	}
 }
 
-func PathsToGraph(paths [][]Pt) Graph {
-	g := make(Graph, 0)
-	for _, path := range paths {
-		addPath(g, path)
-	}
-	return g
-}
+//func PathsToGraph(paths [][]Pt) Graph {
+//	g := make(Graph, 0)
+//	for _, path := range paths {
+//		addPath(g, path)
+//	}
+//	return g
+//}
 
 func RTreesToRects(rtrees []*RTree) []Rect {
 	rs := make([]Rect, len(rtrees))
@@ -118,4 +118,19 @@ func RectToPts(r Rect) (Pt, Pt, Pt, Pt) {
 		Pt{r.X1, r.Y0}, // SE
 		Pt{r.X0, r.Y0}, // SW
 		Pt{r.X0, r.Y1} // NW
+}
+
+func PtsToLine(a, b Pt) Line {
+	return Line{a.X, a.Y, b.X, b.Y}
+}
+
+func PathsToGraph(paths [][]Line) Graph {
+	g := make(Graph, 0)
+	for _, path := range paths {
+		for _, line := range path {
+			ptA, ptB := LineToPt(line)
+			Add(g, ptA, ptB)
+		}
+	}
+	return g
 }

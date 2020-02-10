@@ -48,8 +48,21 @@ func Draw(parent *data.RTree) {
 		pt := r.Value.Center()
 		dc.DrawStringAnchored(r.Value.Label, pt.X, pt.Y, 0.5, 0.5)
 	}
+	DrawDoor(dc, data.Pt{100, 100}, data.Pt{20, 16})
 	dc.SavePNG("out.png")
 	fmt.Println("done!")
+}
+
+func DrawDoor(dc *gg.Context, where, dir data.Pt) {
+	x0, y0 := where.X-dir.X/2, where.Y
+	x1, y1 := x0, y0+dir.Y
+	x2, y2 := x0+dir.X, y1
+	x3, y3 := x0+dir.X, where.Y
+	dc.MoveTo(x0, y0)
+	dc.QuadraticTo(x1, y1, x2, y2)
+	dc.Stroke()
+	dc.DrawLine(x2, y2, x3, y3)
+	dc.Stroke()
 }
 
 // for debugging purposes only
@@ -117,6 +130,12 @@ func main() {
 	squarified := Squarify(bounds, areas)
 	squarified.Quantize(0) // prevents floating point errors
 	backbone := Backbone(bounds, squarified)
-	InsertHallway(squarified, backbone, 4)
-	Draw(squarified)
+	if len(backbone) > 0 {
+		adjMap := RoomsAdjToBackbone_(squarified, backbone)
+		InsertHallway(adjMap, 4)
+	} else {
+		print("No hallway constructed.\n")
+	}
+	//Draw(squarified)
+	drawWithBackbone(squarified, data.GraphToLines(backbone))
 }

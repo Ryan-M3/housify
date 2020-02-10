@@ -8,3 +8,12 @@ func Sum(xs []float64) float64 {
 	}
 	return acc
 }
+
+func HasLine(lines []Line, query Line) bool {
+	for _, ln := range lines {
+		if ln == query {
+			return true
+		}
+	}
+	return false
+}

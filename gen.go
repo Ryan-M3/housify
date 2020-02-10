@@ -99,15 +99,20 @@ func _genHouse(edges map[string][]string, sizes map[string]float64) (data.Rect, 
 		Label: "Bath",
 		Cnx:   nil,
 	}
+	mbed := data.FTree{
+		Value: genArea("Bed", sizes) * 1.5,
+		Label: "Master Bed",
+		Cnx:   nil,
+	}
 	bed := data.FTree{
 		Value: genArea("Bed", sizes),
 		Label: "Bed",
 		Cnx:   nil,
 	}
 	private := data.FTree{
-		Value: bath.Value + bed.Value,
+		Value: bath.Value + bed.Value + mbed.Value,
 		Label: "Private",
-		Cnx:   []*data.FTree{&bed, &bath},
+		Cnx:   []*data.FTree{&bed, &bath, &mbed},
 	}
 
 	tree := data.FTree{

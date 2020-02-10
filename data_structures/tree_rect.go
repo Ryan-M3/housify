@@ -72,3 +72,26 @@ func (t *RTree) Quantize(decimalPlaces float64) {
 		branch.Value.Y1 = RoundTo(branch.Value.Y1, decimalPlaces)
 	}
 }
+
+func (t *RTree) Adjacent(room *Rect, house *RTree) []*Rect {
+	var adj []*Rect
+	a, b, c, d := RectToLines(room)
+	lines := []Line{a, b, c, d}
+	for _, candidate := range RTreesToRects(house.Leafs()) {
+		if candidate != *room {
+			inCommon := 0
+			x, y, z, w := RectToLines(&candidate)
+			for _, candidatePt := range []Line{x, y, z, w} {
+				for _, ln := range lines {
+					if Intersects(ln, candidatePt) {
+						inCommon++
+					}
+				}
+			}
+			if inCommon > 1 {
+				adj = append(adj, &candidate)
+			}
+		}
+	}
+	return adj
+}
