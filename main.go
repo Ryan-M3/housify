@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/fogleman/gg"
-	data "housify/data_structures"
+	data "housify/dataStructures"
 	"math/rand"
 	"time"
 )
@@ -12,10 +12,9 @@ const (
 	scaleAmt = 10.0
 )
 
-func Draw(parent *data.RTree) {
-	parent.Scale(scaleAmt)
-	w := int(parent.Value.Width())
-	h := int(parent.Value.Height())
+func Draw(bounds data.Rect, rooms []*data.Room) {
+	w := int(bounds.Width())
+	h := int(bounds.Height())
 	dc := gg.NewContext(w, h)
 	dc.SetRGB(1, 1, 1)
 	dc.Fill()
@@ -25,44 +24,86 @@ func Draw(parent *data.RTree) {
 	}
 	dc.SetLineWidth(1)
 	dc.SetRGBA(0, 0, 0, 1)
-	for _, r := range parent.Leafs() {
-		if r.Value.Label == "Living" {
-			r.Scale(scaleAmt)
-			pt := r.Value.Center()
-			dc.DrawStringAnchored(r.Value.Label, pt.X, pt.Y, 0.5, 0.5)
+	for _, r := range rooms {
+		r.Rect.Scale(scaleAmt)
+		if r.Rect.Label == "Living" {
+			pt := r.Rect.Center()
+			dc.DrawStringAnchored(r.Rect.Label, pt.X, pt.Y, 0.5, 0.5)
 			continue
 		}
-		r.Scale(scaleAmt)
 		// The coordinate system used winds up flipping the image across the
 		// vertical axis. This is because the library used considers the NW
 		// corner to be the origin, but I always think of points as being on a
 		// Cartesian plane, so the SW corner is the origin. This shouldn't
 		// really matter, however.
 		dc.DrawRectangle(
-			r.Value.X0,
-			r.Value.Y0,
-			r.Value.Width(),
-			r.Value.Height(),
+			r.Rect.X0,
+			r.Rect.Y0,
+			r.Rect.Width(),
+			r.Rect.Height(),
 		)
 		dc.Stroke()
-		pt := r.Value.Center()
-		dc.DrawStringAnchored(r.Value.Label, pt.X, pt.Y, 0.5, 0.5)
+		pt := r.Rect.Center()
+		dc.DrawStringAnchored(r.Rect.Label, pt.X, pt.Y, 0.5, 0.5)
+		DrawDoors(dc, r)
 	}
-	DrawDoor(dc, data.Pt{100, 100}, data.Pt{20, 16})
 	dc.SavePNG("out.png")
 	fmt.Println("done!")
 }
 
-func DrawDoor(dc *gg.Context, where, dir data.Pt) {
-	x0, y0 := where.X-dir.X/2, where.Y
-	x1, y1 := x0, y0+dir.Y
-	x2, y2 := x0+dir.X, y1
-	x3, y3 := x0+dir.X, where.Y
-	dc.MoveTo(x0, y0)
-	dc.QuadraticTo(x1, y1, x2, y2)
-	dc.Stroke()
-	dc.DrawLine(x2, y2, x3, y3)
-	dc.Stroke()
+func DrawDoors(dc *gg.Context, room *data.Room) {
+	var x0, y0, x1, y1, x2, y2, x3, y3 float64
+	for _, door := range room.Doors {
+		top, right, btm, left := data.RectToLines(room.Rect)
+		dir := data.Pt{20, 16}
+		var where data.Pt
+		switch door.Orientation {
+		case data.N:
+			a, b := data.LineToPt(top)
+			where = data.Lerp(door.Position, a, b)
+			x0, y0 = where.X-dir.X/2, where.Y
+			x1, y1 = x0, y0+dir.Y
+			x2, y2 = x0+dir.X, y1
+			x3, y3 = x0+dir.X, where.Y
+		case data.E:
+			a, b := data.LineToPt(right)
+			where = data.Lerp(door.Position, a, b)
+			// 0;0 +    + 3;1
+			//     |    |
+			// 1;3 +----+ 2;2
+			x0, y0 = where.X, where.Y
+			x3, y3 = x0, y0+dir.Y
+			x2, y2 = x0+dir.X, y3
+			x1, y1 = x0+dir.X, where.Y
+		case data.S:
+			a, b := data.LineToPt(btm)
+			where = data.Lerp(door.Position, a, b)
+			x0, y0 = where.X-dir.X/2, where.Y
+			x1, y1 = x0, y0-dir.Y
+			x2, y2 = x0+dir.X, y1
+			x3, y3 = x0+dir.X, where.Y
+		case data.W:
+			a, b := data.LineToPt(left)
+			where = data.Lerp(door.Position, a, b)
+			dir.X *= -1
+			// 0;1 +    + 3;0
+			//     |    |
+			// 1;2 +----+ 2;3
+			x1, y1 = where.X+dir.X, where.Y
+			x2, y2 = x1, y1+dir.Y
+			x3, y3 = x1-dir.X, y2
+			x0, y0 = x1-dir.X, where.Y
+		}
+		dc.MoveTo(x0, y0)
+		dc.QuadraticTo(x1, y1, x2, y2)
+		dc.Stroke()
+		dc.DrawLine(x2, y2, x3, y3)
+		dc.Stroke()
+		dc.SetRGB255(255, 255, 255)
+		dc.DrawLine(x0, y0, x3, y3)
+		dc.Stroke()
+		dc.SetRGB255(0, 0, 0)
+	}
 }
 
 // for debugging purposes only
@@ -130,12 +171,10 @@ func main() {
 	squarified := Squarify(bounds, areas)
 	squarified.Quantize(0) // prevents floating point errors
 	backbone := Backbone(bounds, squarified)
-	if len(backbone) > 0 {
-		adjMap := RoomsAdjToBackbone_(squarified, backbone)
-		InsertHallway(adjMap, 4)
-	} else {
-		print("No hallway constructed.\n")
-	}
-	//Draw(squarified)
-	drawWithBackbone(squarified, data.GraphToLines(backbone))
+	rooms := data.RectsToRooms(data.RTreesToRects(squarified.Leafs()))
+	adjMap := RoomsAdjToBackbone(rooms, backbone)
+	InsertHallway(adjMap, 4)
+	bounds.Scale(scaleAmt)
+	Draw(bounds, rooms)
+	//drawWithBackbone(squarified, data.GraphToLines(backbone))
 }

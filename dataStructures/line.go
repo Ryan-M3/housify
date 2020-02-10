@@ -1,4 +1,4 @@
-package data_structures
+package dataStructures
 
 import (
 	"math"
@@ -304,4 +304,10 @@ func FilterLines(lines []Line) []Line {
 		}
 	}
 	return output
+}
+
+func (line Line) MidPt() Pt {
+	a, b := LineToPt(line)
+	x0, y0, x1, y1 := a.X, a.Y, b.X, b.Y
+	return Pt{(x0 + x1) / 2, (y0 + y1) / 2}
 }

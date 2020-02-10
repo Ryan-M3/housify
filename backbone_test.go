@@ -2,7 +2,7 @@ package main
 
 import (
 	//"fmt"
-	//data "housify/data_structures"
+	//data "housify/dataStructures"
 	//"math"
 	"testing"
 )

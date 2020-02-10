@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"errors"
-	data "housify/data_structures"
+	data "housify/dataStructures"
 	"io"
 	"math"
 	"math/rand"

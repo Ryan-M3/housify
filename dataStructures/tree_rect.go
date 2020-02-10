@@ -1,4 +1,4 @@
-package data_structures
+package dataStructures
 
 type RTree struct {
 	Value Rect
@@ -58,10 +58,7 @@ func (t *RTree) FindNearestPt(pt Pt) []*Rect {
 // origin. Use this if you are iterating over rooms and want to make the entire
 // picture bigger.
 func (t *RTree) Scale(amt float64) {
-	t.Value.X0 *= amt
-	t.Value.Y0 *= amt
-	t.Value.X1 *= amt
-	t.Value.Y1 *= amt
+	t.Value.Scale(amt)
 }
 
 func (t *RTree) Quantize(decimalPlaces float64) {

@@ -1,4 +1,4 @@
-package data_structures
+package dataStructures
 
 import (
 	"math"
@@ -133,4 +133,12 @@ func PathsToGraph(paths [][]Line) Graph {
 		}
 	}
 	return g
+}
+
+func RectsToRooms(rects []Rect) []*Room {
+	output := make([]*Room, len(rects))
+	for i, _ := range rects {
+		output[i] = &Room{&rects[i], nil}
+	}
+	return output
 }

@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-	data "housify/data_structures"
+	data "housify/dataStructures"
 )
 
 type Side int
@@ -51,16 +50,17 @@ func hasSide(sides []Side, query Side) bool {
 	return false
 }
 
-func RoomsAdjToBackbone_(house *data.RTree, backbone data.Graph) map[*data.Rect][]Side {
-	adj := make(map[*data.Rect][]Side, 0)
-	for _, room := range house.Leafs() {
-		a, b, c, d := data.RectToLines(&room.Value)
+// Return a list of rooms which are adjacent to the provided backbone.
+func RoomsAdjToBackbone(house []*data.Room, backbone data.Graph) map[*data.Room][]Side {
+	adj := make(map[*data.Room][]Side, 0)
+	for _, room := range house {
+		a, b, c, d := data.RectToLines(room.Rect)
 		for _, ln := range unique(data.GraphToLines(backbone)) {
 			for i, roomLn := range []data.Line{a, b, c, d} {
 				if data.Intersects(ln, roomLn) {
 					side := []Side{top, right, btm, left}[i]
-					if !hasSide(adj[&room.Value], side) {
-						adj[&room.Value] = append(adj[&room.Value], side)
+					if !hasSide(adj[room], side) {
+						adj[room] = append(adj[room], side)
 					}
 				}
 			}
@@ -69,99 +69,34 @@ func RoomsAdjToBackbone_(house *data.RTree, backbone data.Graph) map[*data.Rect]
 	return adj
 }
 
-func RoomsAdjToBackbone(house *data.RTree, backbone data.Graph) map[*data.Rect][]Side {
-	adj := make(map[*data.Rect][]Side, 0)
-	for _, ln := range unique(data.GraphToLines(backbone)) {
-		a, b := data.LineToPt(ln)
-		rooms := append(house.FindNearestPt(a), house.FindNearestPt(b)...)
-		//rooms := InBoth(house.FindNearestPt(a), house.FindNearestPt(b))
-		if data.Horz(ln) {
-			for _, r := range rooms {
-				if sides, ok := adj[r]; ok {
-					continue
-				} else if r.AboveLine(ln) {
-					if !hasSide(sides, btm) {
-						adj[r] = append(adj[r], btm)
-					}
-				} else {
-					if !hasSide(sides, top) {
-						adj[r] = append(adj[r], top)
-					}
-				}
-			}
-		} else {
-			for _, r := range rooms {
-				if sides, ok := adj[r]; ok {
-					continue
-				} else if r.RightOfLine(ln) {
-					if !hasSide(sides, left) {
-						adj[r] = append(adj[r], left)
-					}
-				} else if r.LeftOfLine(ln) {
-					if !hasSide(sides, right) {
-						adj[r] = append(adj[r], right)
-					}
-				}
-			}
-		}
-	}
-	return adj
-}
-
-func InsertHallway(roomMap map[*data.Rect][]Side, width float64) {
+func InsertHallway(roomMap map[*data.Room][]Side, width float64) {
 	for room, sides := range roomMap {
+		if room.Rect.Label == "Living" {
+			continue
+		}
 		for _, side := range sides {
-			fmt.Println(room)
 			switch side {
 			case top:
-				room.SetHeightTop(room.Height() - width/2.0)
+				room.Rect.SetHeightTop(room.Rect.Height() - width/2.0)
+				if len(room.Doors) == 0 {
+					room.Doors = append(room.Doors, &data.Door{data.N, 0.50})
+				}
 			case right:
-				room.SetWidthR(room.Width() - width/2.0)
+				room.Rect.SetWidthR(room.Rect.Width() - width/2.0)
+				if len(room.Doors) == 0 {
+					room.Doors = append(room.Doors, &data.Door{data.E, 0.50})
+				}
 			case btm:
-				room.SetHeightBtm(room.Height() - width/2.0)
+				room.Rect.SetHeightBtm(room.Rect.Height() - width/2.0)
+				if len(room.Doors) == 0 {
+					room.Doors = append(room.Doors, &data.Door{data.S, 0.50})
+				}
 			case left:
-				room.SetWidthL(room.Width() - width/2.0)
+				room.Rect.SetWidthL(room.Rect.Width() - width/2.0)
+				if len(room.Doors) == 0 {
+					room.Doors = append(room.Doors, &data.Door{data.W, 0.50})
+				}
 			}
 		}
 	}
 }
-
-//func InsertHallway(house *data.RTree, backbone data.Graph, width float64) {
-//	movedHorz := make(map[*data.Rect]bool, 0)
-//	movedVert := make(map[*data.Rect]bool, 0)
-//	for _, ln := range unique(data.GraphToLines(backbone)) {
-//		a, b := data.LineToPt(ln)
-//		rooms := append(house.FindNearestPt(a), house.FindNearestPt(b)...)
-//		if data.Horz(ln) {
-//			for _, r := range rooms {
-//				if _, ok := movedHorz[r]; ok {
-//					continue
-//				} else {
-//					movedHorz[r] = true
-//				}
-//				if r.AboveLine(ln) {
-//					r.SetHeightBtm(r.Height() - width/2.0)
-//				} else if r.BelowLine(ln) {
-//					r.SetHeightTop(r.Height() - width/2.0)
-//				} else {
-//					panic("Invalid input encounterd in function call to InsertHallway()")
-//				}
-//			}
-//		} else {
-//			for _, r := range rooms {
-//				if _, ok := movedVert[r]; ok {
-//					continue
-//				} else {
-//					movedVert[r] = true
-//				}
-//				if r.RightOfLine(ln) {
-//					r.SetWidthL(r.Width() - width/2.0)
-//				} else if r.LeftOfLine(ln) {
-//					r.SetWidthR(r.Width() - width/2.0)
-//				} else {
-//					panic("Invalid input encounterd in function call to InsertHallway()")
-//				}
-//			}
-//		}
-//	}
-//}

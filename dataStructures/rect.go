@@ -1,4 +1,4 @@
-package data_structures
+package dataStructures
 
 import (
 	"math"
@@ -37,6 +37,13 @@ func (r *Rect) Contains(pt Pt) bool {
 /////////////
 // Setters //
 /////////////
+
+func (r *Rect) Scale(amt float64) {
+	r.X0 *= amt
+	r.Y0 *= amt
+	r.X1 *= amt
+	r.Y1 *= amt
+}
 
 // Set the width to w by moving the right edge of the rectangle.
 func (r *Rect) SetWidthR(w float64) {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	data "housify/data_structures"
+	data "housify/dataStructures"
 	"sort"
 )
 
@@ -33,11 +33,7 @@ func Backbone(bounds data.Rect, house *data.RTree) data.Graph {
 	top, right, btm, left := data.RectToLines(&living.Value)
 	sides := []data.Line{top, right, btm, left}
 	sort.SliceStable(sides, func(i, j int) bool {
-		a, b := data.LineToPt(sides[i])
-		c, d := data.LineToPt(sides[j])
-		mid1 := data.Pt{(a.X + b.X) / 2, (a.Y + b.Y) / 2}
-		mid2 := data.Pt{(c.X + d.X) / 2, (c.Y + d.Y) / 2}
-		return data.Distance(mid1, bounds.Center()) < data.Distance(mid2, bounds.Center())
+		return data.Distance(sides[i].MidPt(), bounds.Center()) < data.Distance(sides[j].MidPt(), bounds.Center())
 	})
 	paths := AStars(
 		sides[0],

@@ -1,7 +1,7 @@
 package main
 
 import (
-	data "housify/data_structures"
+	data "housify/dataStructures"
 	"math"
 )
 

@@ -1,4 +1,4 @@
-package data_structures
+package dataStructures
 
 // Sum a list of floats.
 func Sum(xs []float64) float64 {
