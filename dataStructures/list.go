@@ -17,3 +17,12 @@ func HasLine(lines []Line, query Line) bool {
 	}
 	return false
 }
+
+func HasString(strings []string, query string) bool {
+	for _, s := range strings {
+		if s == query {
+			return true
+		}
+	}
+	return false
+}

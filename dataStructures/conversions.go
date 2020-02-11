@@ -138,7 +138,7 @@ func PathsToGraph(paths [][]Line) Graph {
 func RectsToRooms(rects []Rect) []*Room {
 	output := make([]*Room, len(rects))
 	for i, _ := range rects {
-		output[i] = &Room{&rects[i], nil}
+		output[i] = &Room{&rects[i], nil, nil}
 	}
 	return output
 }

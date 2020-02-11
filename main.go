@@ -55,7 +55,7 @@ func DrawDoors(dc *gg.Context, room *data.Room) {
 	var x0, y0, x1, y1, x2, y2, x3, y3 float64
 	for _, door := range room.Doors {
 		top, right, btm, left := data.RectToLines(room.Rect)
-		dir := data.Pt{20, 16}
+		dir := data.Pt{40, 40}
 		var where data.Pt
 		switch door.Orientation {
 		case data.N:
@@ -68,9 +68,6 @@ func DrawDoors(dc *gg.Context, room *data.Room) {
 		case data.E:
 			a, b := data.LineToPt(right)
 			where = data.Lerp(door.Position, a, b)
-			// 0;0 +    + 3;1
-			//     |    |
-			// 1;3 +----+ 2;2
 			x0, y0 = where.X, where.Y
 			x3, y3 = x0, y0+dir.Y
 			x2, y2 = x0+dir.X, y3
@@ -86,9 +83,6 @@ func DrawDoors(dc *gg.Context, room *data.Room) {
 			a, b := data.LineToPt(left)
 			where = data.Lerp(door.Position, a, b)
 			dir.X *= -1
-			// 0;1 +    + 3;0
-			//     |    |
-			// 1;2 +----+ 2;3
 			x1, y1 = where.X+dir.X, where.Y
 			x2, y2 = x1, y1+dir.Y
 			x3, y3 = x1-dir.X, y2
@@ -101,6 +95,9 @@ func DrawDoors(dc *gg.Context, room *data.Room) {
 		dc.Stroke()
 		dc.SetRGB255(255, 255, 255)
 		dc.DrawLine(x0, y0, x3, y3)
+		// You wouldn't think that calling this function multiple times would
+		// make the previous stoke with 100% alpha any more white, but it does.
+		dc.Stroke()
 		dc.Stroke()
 		dc.SetRGB255(0, 0, 0)
 	}
@@ -172,8 +169,16 @@ func main() {
 	squarified.Quantize(0) // prevents floating point errors
 	backbone := Backbone(bounds, squarified)
 	rooms := data.RectsToRooms(data.RTreesToRects(squarified.Leafs()))
+
+	roomEdges, err := loadRoomEdges("data/room_edges.csv")
+	if err != nil {
+		panic(err)
+	}
+	SetAdjacentRooms(rooms)
+	AddDoorsBetweenRooms(rooms, roomEdges)
+
 	adjMap := RoomsAdjToBackbone(rooms, backbone)
-	InsertHallway(adjMap, 4)
+	InsertHallway(adjMap, 6)
 	bounds.Scale(scaleAmt)
 	Draw(bounds, rooms)
 	//drawWithBackbone(squarified, data.GraphToLines(backbone))
