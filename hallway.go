@@ -32,7 +32,7 @@ func unique(lines []data.Line) []data.Line {
 	return output
 }
 
-func hasSide(sides []Side, query Side) bool {
+func hasDir(sides []data.Dir, query data.Dir) bool {
 	for _, side := range sides {
 		if side == query {
 			return true
@@ -42,15 +42,15 @@ func hasSide(sides []Side, query Side) bool {
 }
 
 // Return a list of rooms which are adjacent to the provided backbone.
-func RoomsAdjToBackbone(house []*data.Room, backbone data.Graph) map[*data.Room][]Side {
-	adj := make(map[*data.Room][]Side, 0)
+func RoomsAdjToBackbone(house []*data.Room, backbone data.Graph) map[*data.Room][]data.Dir {
+	adj := make(map[*data.Room][]data.Dir, 0)
 	for _, room := range house {
 		a, b, c, d := data.RectToLines(room.Rect)
 		for _, ln := range unique(data.GraphToLines(backbone)) {
 			for i, roomLn := range []data.Line{a, b, c, d} {
 				if data.Intersects(ln, roomLn) {
-					side := []Side{top, right, btm, left}[i]
-					if !hasSide(adj[room], side) {
+					side := []data.Dir{data.N, data.E, data.S, data.W}[i]
+					if !hasDir(adj[room], side) {
 						adj[room] = append(adj[room], side)
 					}
 				}
@@ -88,29 +88,29 @@ func hasEscape(room *data.Room) bool {
 	return false
 }
 
-func InsertHallway(roomMap map[*data.Room][]Side, width float64) {
+func InsertHallway(roomMap map[*data.Room][]data.Dir, width float64) {
 	for room, sides := range roomMap {
 		if room.Rect.Label == "Living" {
 			continue
 		}
 		for _, side := range sides {
 			switch side {
-			case top:
+			case data.N:
 				room.Rect.SetHeightTop(room.Rect.Height() - width/2.0)
 				if !hasEscape(room) && len(room.Doors) < 2 {
 					room.Doors = append(room.Doors, &data.Door{data.N, 0.50})
 				}
-			case right:
+			case data.E:
 				room.Rect.SetWidthR(room.Rect.Width() - width/2.0)
 				if !hasEscape(room) && len(room.Doors) < 2 {
 					room.Doors = append(room.Doors, &data.Door{data.E, 0.50})
 				}
-			case btm:
+			case data.S:
 				room.Rect.SetHeightBtm(room.Rect.Height() - width/2.0)
 				if !hasEscape(room) && len(room.Doors) < 2 {
 					room.Doors = append(room.Doors, &data.Door{data.S, 0.50})
 				}
-			case left:
+			case data.W:
 				room.Rect.SetWidthL(room.Rect.Width() - width/2.0)
 				if !hasEscape(room) && len(room.Doors) < 2 {
 					room.Doors = append(room.Doors, &data.Door{data.W, 0.50})

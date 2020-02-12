@@ -85,7 +85,7 @@ func SetAdjacentRooms(rooms []*data.Room) {
 }
 
 // Where is B relative to A? Returns one of N, E, S, or W.
-func RoomOrientation(a, b *data.Room) data.CardinalDirection {
+func RoomOrientation(a, b *data.Room) data.Dir {
 	a0, _, a1, _ := data.RectToPts(*a.Rect)
 	b0, _, b1, _ := data.RectToPts(*b.Rect)
 	if a1.Y == b0.Y {
