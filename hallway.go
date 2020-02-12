@@ -4,6 +4,7 @@ import (
 	data "housify/dataStructures"
 )
 
+// Intersection of two lists of rectangles.
 func InBoth(xs, ys []*data.Rect) []*data.Rect {
 	var output []*data.Rect
 	// This looks inefficient, but each list can be at most 4 items long, and
@@ -60,6 +61,7 @@ func RoomsAdjToBackbone(house []*data.Room, backbone data.Graph) map[*data.Room]
 	return adj
 }
 
+// List of all doors in a room or a room connected to that room.
 func getDoors(room *data.Room, visited map[*data.Room]bool) ([]*data.Door, map[*data.Room]bool) {
 	visited[room] = true
 	doors := room.Doors
@@ -72,6 +74,8 @@ func getDoors(room *data.Room, visited map[*data.Room]bool) ([]*data.Door, map[*
 	return doors, visited
 }
 
+// Whether or not a room has a door that isn't to an adjacent room (i.e. to
+// outside or to a hallway).
 func hasEscape(room *data.Room) bool {
 	// If an adjacent room has a door which is not in any other adjacent room,
 	// then that room has access to a hallway or outside.
@@ -88,6 +92,7 @@ func hasEscape(room *data.Room) bool {
 	return false
 }
 
+// Resize rooms so that a hallway can fit inside it.
 func InsertHallway(roomMap map[*data.Room][]data.Dir, width float64) {
 	for room, sides := range roomMap {
 		if room.Rect.Label == "Living" {

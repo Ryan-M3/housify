@@ -11,6 +11,7 @@ const (
 	scaleAmt = 10.0
 )
 
+// for debugging purposes
 func TestTree() (data.Rect, *data.FTree) {
 	bounds := data.Rect{X0: 0, Y0: 0, X1: 60, Y1: 40, Label: "root"}
 	a := data.FTree{Value: 60, Label: "Living", Cnx: nil}

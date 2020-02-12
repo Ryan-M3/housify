@@ -24,12 +24,11 @@ func Backbone(bounds data.Rect, house *data.RTree) data.Graph {
 	var lines []data.Line
 	for _, ln := range data.ResegmentLines(data.RectsToLines(rects)) {
 		if !data.InPerimeter(bounds, ln) {
-			//!data.InPerimeter(living.Value, ln) &&
-			//!data.EndsInPerimeter(bounds, ln) {
 			lines = append(lines, ln)
 		}
 	}
-	// Find the side of the living room closest to the middle of the house by sorting it.
+	// Find the side of the living room closest to the middle of the house by
+	// sorting it.
 	top, right, btm, left := data.RectToLines(&living.Value)
 	sides := []data.Line{top, right, btm, left}
 	sort.SliceStable(sides, func(i, j int) bool {
@@ -41,5 +40,4 @@ func Backbone(bounds data.Rect, house *data.RTree) data.Graph {
 		generateTargets(rects),
 	)
 	return data.PathsToGraph(paths)
-	//return data.LinesToGraph(lines)
 }
